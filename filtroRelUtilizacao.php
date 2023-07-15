@@ -100,7 +100,7 @@ require_once "lib/functions.php";
                                             <div class="col-lg-8">
                                                 <div class="page-header-title">
                                                     <div class="d-inline">
-                                                        <h4>Clientes</h4>
+                                                        <h4>Uso do benefício</h4>
                                                     </div>
                                                 </div>
                                             </div>
@@ -110,7 +110,7 @@ require_once "lib/functions.php";
                                                         <li class="breadcrumb-item">
                                                             <a href="dashboard.php"> <i class=" feather icon-home"></i> </a>
                                                         </li>
-                                                        <li class="breadcrumb-item"><a href="#">Clientes</a>
+                                                        <li class="breadcrumb-item"><a href="#">Uso do benefício</a>
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -122,122 +122,50 @@ require_once "lib/functions.php";
                                             <div class="col-sm-12">
                                                 <div class="card">
                                                     <div class="card-block">
-                                                        <form action="#" method="GET" id="frmFiltro">
+                                                        <form action="relUtilizacao.php" method="GET" id="frmFiltro" target="_blank">
                                                             <div class="form-group row">
                                                                 <div class="col-sm-4">
                                                                     <label for="fcliente">Cliente:</label>
                                                                     <input type="text" class="form-control" name="fcliente" id="fcliente">
                                                                 </div>
-                                                                <div class="col-sm-3">
-                                                                    <label for="fcidade">Cidade:</label>
-                                                                    <input type="text" class="form-control" name="fcidade" id="fcidade">
-                                                                </div>
-                                                                <div class="col-sm-3">
-                                                                    <label for="fcpf">CPF:</label>
-                                                                    <input type="text" class="form-control" name="fcpf" id="fcpf" data-mask="999.999.999-99">
+                                                                <div class="col-sm-4">
+                                                                    <label for="fcomercio">Comércio:</label>
+                                                                    <select name="fcomercio" id="fcomercio" class="form-control">
+                                                                        <option value="T">Todos</option>
+                                                                        <?php
+                                                                        $sql = "select * from comercio order by nome";
+                                                                        $rs = $conn->query($sql);
+
+                                                                        if ($rs->rowCount() > 0) {
+                                                                            while ($ln = $rs->fetch(PDO::FETCH_ASSOC)) {
+                                                                                echo "<option value='{$ln['id']}'>{$ln['nome']}</option>";
+                                                                            }
+                                                                        }
+                                                                        ?>
+                                                                    </select>
                                                                 </div>
                                                                 <div class="col-sm-2">
-                                                                    <label for="flocal">Local:</label>
-                                                                    <select name="flocal" id="flocal" class="form-control">
-                                                                        <option value="T">Todos</option>
-                                                                        <option value="App">App</option>
-                                                                        <option value="Painel">Painel</option>
+                                                                    <label for="fdatainicio">Data Início:</label>
+                                                                    <input type="date" class="form-control" name="fdatainicio" id="fdatainicio">
+                                                                </div>
+                                                                <div class="col-sm-2">
+                                                                    <label for="fdatafinal">Data Final:</label>
+                                                                    <input type="date" class="form-control" name="fdatafinal" id="fdatafinal">
+                                                                </div>
+                                                                <div class="col-sm-2">
+                                                                    <label for="fgerar">Gerar em:</label>
+                                                                    <select name="fgerar" id="fgerar" class="form-control">
+                                                                        <option value="T">Tela</option>
+                                                                        <option value="E">Excel</option>
                                                                     </select>
                                                                 </div>
                                                             </div>
                                                             <div class="form-group row">
-                                                                <div class="col-sm-2">
-                                                                    <label for="fdatainicio">Data Cad. Início:</label>
-                                                                    <input type="date" class="form-control" name="fdatainicio" id="fdatainicio">
-                                                                </div>
-                                                                <div class="col-sm-2">
-                                                                    <label for="fdatafinal">Data Cad. Final:</label>
-                                                                    <input type="date" class="form-control" name="fdatafinal" id="fdatafinal">
-                                                                </div>
-                                                            </div>
-                                                            <div class="form-group row">
                                                                 <div class="col-sm-12">
-                                                                    <a class="btn btn-primary btn-sm" href="#" id="btnFiltrar"><i class="fa fa-filter"></i> Filtrar</a>
-                                                                    <a class="btn btn-success btn-sm" href="cadCliente.php?action=insert"><i class="fa fa-plus"></i> Adicionar</a>
+                                                                    <a class="btn btn-primary btn-sm" href="#" id="btnFiltrar"><i class="fa fa-filter"></i> Gerar relatório</a>
                                                                 </div>
                                                             </div>
                                                         </form>
-                                                        <div class="dt-responsive table-responsive">
-                                                            <table id="simpletable" class="table table-striped table-bordered nowrap">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Cód.</th>
-                                                                        <th>Nome</th>
-                                                                        <th>Gênero</th>
-                                                                        <th>Cidade</th>
-                                                                        <th>WhatsApp</th>
-                                                                        <th>Local</th>
-                                                                        <th>Data Cad.</th>
-                                                                        <th>Ações</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <?php
-                                                                    $sql = "select *, concat(trim(clientes.nome), ' ', trim(clientes.sobrenome)) as cliente from clientes where 1 = 1";
-
-                                                                    if (!empty($_REQUEST['fcliente'])) {
-                                                                        $sql .= " and concat(trim(clientes.nome), ' ', trim(clientes.sobrenome)) like '%" . $_REQUEST['fcliente'] . "%'";
-                                                                    }
-
-                                                                    if (!empty($_REQUEST['fcidade'])) {
-                                                                        $sql .= " and clientes.cidade like '%" . $_REQUEST['fcidade'] . "%'";
-                                                                    }
-
-                                                                    if (!empty($_REQUEST['fcpf'])) {
-                                                                        $sql .= " and clientes.cpf = '" . $_REQUEST['fcpf'] . "'";
-                                                                    }
-
-
-                                                                    if (!empty($_REQUEST['flocal']) && $_REQUEST['flocal'] != 'T') {
-                                                                        $sql .= " and clientes.local = '" . $_REQUEST['flocal'] . "'";
-                                                                    }
-
-                                                                    if (!empty($_REQUEST['fdatainicio']) && !empty($_REQUEST['fdatafinal'])) {
-                                                                        $sql .= " and datacad between '" . $_REQUEST['fdatainicio'] . "' and '" . $_REQUEST['fdatafinal'] . "'";
-                                                                    }
-
-                                                                    $rs = $conn->query($sql);
-
-                                                                    if ($rs->rowCount() > 0) {
-                                                                        while ($ln = $rs->fetch(PDO::FETCH_ASSOC)) {
-
-                                                                            switch (strtoupper($ln['local'])) {
-                                                                                case 'APP':
-                                                                                    $local = "<span class='label label-primary'>App</span>";
-                                                                                    break;
-                                                                                case 'PAINEL':
-                                                                                    $local = "<span class='label label-success'>Painel</span>";
-                                                                                    break;
-                                                                                default:
-                                                                                    $local = "<span class='label label-success'>Painel</span>";
-                                                                                    break;
-                                                                            }
-                                                                    ?>
-                                                                            <tr>
-                                                                                <td><?= $ln['id'] ?></td>
-                                                                                <td><?= $ln['cliente'] ?></td>
-                                                                                <td><?= $ln['genero'] ?></td>
-                                                                                <td><?= $ln['cidade'] ?></td>
-                                                                                <td><?= $ln['whatsapp'] ?></td>
-                                                                                <td><?= $local ?></td>
-                                                                                <td><?= normalizaDataHora($ln['datacad']) ?></td>
-                                                                                <td>
-                                                                                    <a class="btn btn-info btn-sm" href="cadCliente.php?action=edit&id=<?= $ln['id'] ?>"><i class="fa fa-edit"></i> Editar</a>
-                                                                                    <a class="btn btn-danger btn-sm" action="#" onclick="excluir(<?= $ln['id'] ?>)"><i class="fa fa-trash"></i> Excluir</a>
-                                                                                </td>
-                                                                            </tr>
-                                                                    <?php
-                                                                        }
-                                                                    }
-                                                                    ?>
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

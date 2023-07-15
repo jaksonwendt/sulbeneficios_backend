@@ -25,7 +25,7 @@ if ($_REQUEST['action'] == 'insert') {
     $cidade = anti_injection($_REQUEST['cidade']);
     $estado = anti_injection($_REQUEST['estado']);
 
-    $senha = gerarSenha();
+    $senha = gerarSenha(6, false, false, true, false);
     $password = md5($senha);
 
     //Todo

@@ -5,22 +5,18 @@ require_once "session.php";
 require_once "lib/conexao.php";
 require_once "lib/functions.php";
 
-$sql = "select assinatura.id, assinatura.data, assinatura.inicio, assinatura.fim, assinatura.status, assinatura.valor, concat(trim(clientes.nome), ' ', trim(clientes.sobrenome)) as cliente from clientes, assinatura where assinatura.cliente = clientes.id";
+$sql = "select utilizacao.id, utilizacao.data, utilizacao.tipo, utilizacao.valor, concat(trim(clientes.nome), ' ', trim(clientes.sobrenome)) as cliente, comercio.nome as comercio from utilizacao, clientes, comercio where utilizacao.cliente = clientes.id and utilizacao.comercio = comercio.id";
 
 if (!empty($_REQUEST['fcliente'])) {
     $sql .= " and concat(trim(clientes.nome), ' ', trim(clientes.sobrenome)) like '%" . $_REQUEST['fcliente'] . "%'";
 }
 
+if (!empty($_REQUEST['fcomercio']) && $_REQUEST['fcomercio'] != 'T') {
+    $sql .= " and comercio.id = " . $_REQUEST['fcomercio'];
+}
+
 if (!empty($_REQUEST['fdatainicio']) && !empty($_REQUEST['fdatafinal'])) {
     $sql .= " and data between '" . $_REQUEST['fdatainicio'] . "' and '" . $_REQUEST['fdatafinal'] . "'";
-}
-
-if (!empty($_REQUEST['fvigencia']) && $_REQUEST['fvigencia'] != 'T') {
-    $sql .= " and fim >= now()";
-}
-
-if (!empty($_REQUEST['fstatus']) && $_REQUEST['fstatus'] != 'T') {
-    $sql .= " and status = '" . $_REQUEST['fstatus'] . "'";
 }
 
 $rs = $conn->query($sql);
@@ -28,23 +24,26 @@ $rs = $conn->query($sql);
 if ($_REQUEST['fgerar'] == 'E') {
 
     require_once "bower_components/shuchkin/simplexlsxgen/src/SimpleXLSXGen.php";
-    $filename = "assinaturas_" . date('Ymd') . ".xlsx";
+    $filename = "beneficios_" . date('Ymd') . ".xlsx";
 
     $array = [];
-    array_push($array, ['Cliente', 'Contratação', 'Início', 'Término', 'Vigência', 'Status', 'Valor']);
+    array_push($array, ['Comércio', 'Cliente', 'Data', 'Valor', 'Tipo']);
 
     $clientes = $rs->fetchAll(PDO::FETCH_ASSOC);
     foreach ($clientes as $cliente) {
 
 
-        if (strtotime($cliente['fim']) >= strtotime(date("Y-m-d"))) {
-            $vigencia = "<span class='label label-success'>Vigente</span>";
-        } else {
-            $vigencia = "<span class='label label-danger'>Encerrada</span>";
+        switch ($cliente['tipo']) {
+            case 'D':
+                $tipo = "<span class='label label-primary'>Desconto</span>";
+                break;
+            case 'P':
+                $tipo = "<span class='label label-success'>Prêmio</span>";
+                break;
         }
 
 
-        array_push($array, [$cliente['cliente'], $cliente['data'], $cliente['inicio'], $cliente['fim'], $vigencia, $cliente['status'], $cliente['valor']]);
+        array_push($array, [$cliente['comercio'], $cliente['cliente'], $cliente['data'], $cliente['valor'], $tipo]);
     }
 
     $xlsx = Shuchkin\SimpleXLSXGen::fromArray($array);
@@ -105,13 +104,11 @@ if ($_REQUEST['fgerar'] == 'E') {
         <table>
             <thead>
                 <tr>
+                    <th>Comércio</th>
                     <th>Cliente</th>
-                    <th>Contratação</th>
-                    <th>Início</th>
-                    <th>Término</th>
-                    <th>Vigência</th>
-                    <th>Status</th>
+                    <th>Data</th>
                     <th>Valor</th>
+                    <th>Tipo</th>
                 </tr>
             </thead>
             <tbody>
@@ -120,21 +117,22 @@ if ($_REQUEST['fgerar'] == 'E') {
                     $total = 0;
                     while ($ln = $rs->fetch(PDO::FETCH_ASSOC)) {
 
-                        if (strtotime($ln['fim']) >= strtotime(date("Y-m-d"))) {
-                            $vigencia = "<span class='label label-success'>Vigente</span>";
-                        } else {
-                            $vigencia = "<span class='label label-danger'>Encerrada</span>";
+                        switch ($ln['tipo']) {
+                            case 'D':
+                                $tipo = "<span class='label label-primary'>Desconto</span>";
+                                break;
+                            case 'P':
+                                $tipo = "<span class='label label-success'>Prêmio</span>";
+                                break;
                         }
 
                         $total += $ln['valor'];
 
                         echo "<tr>";
+                        echo "<td class='text-center'>" . $ln['comercio'] . "</td>";
                         echo "<td class='text-center'>" . $ln['cliente'] . "</td>";
                         echo "<td class='text-center'>" . normalizaData($ln['data']) . "</td>";
-                        echo "<td class='text-center'>" . normalizaData($ln['inicio']) . "</td>";
-                        echo "<td class='text-center'>" . normalizaData($ln['fim']) . "</td>";
-                        echo "<td class='text-center'>" . $vigencia . "</td>";
-                        echo "<td class='text-center'>" . $ln['status'] . "</td>";
+                        echo "<td class='text-center'>" . $tipo . "</td>";
                         echo "<td class='text-right'>R$ " . moedaUsuario($ln['valor']) . "</td>";
                         echo "</tr>";
                     }
@@ -143,7 +141,7 @@ if ($_REQUEST['fgerar'] == 'E') {
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="6">Total: <?= $rs->rowCount() ?></td>
+                    <td colspan="4">Total: <?= $rs->rowCount() ?></td>
                     <td class='text-right'>R$ <?= moedaUsuario($total) ?></td>
                 </tr>
             </tfoot>

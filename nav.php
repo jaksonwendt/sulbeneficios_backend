@@ -116,12 +116,12 @@
                         </a>
                     </li>
                     <li class="#">
-                        <a href="#">
-                            <span class="pcoded-mtext">Utilização</span>
+                        <a href="filtroRelUtilizacao.php">
+                            <span class="pcoded-mtext">Uso de benefício</span>
                         </a>
                     </li>
                     <li class="#">
-                        <a href="#">
+                        <a href="filtroSorteio.php">
                             <span class="pcoded-mtext">Sorteios</span>
                         </a>
                     </li>

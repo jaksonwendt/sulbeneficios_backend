@@ -24,7 +24,7 @@ if ($payment->status == 'approved') {
     if ($rs->rowCount() > 0) {
         $cliente = $rs->fetchColumn();
 
-        $sqlRenovacao = "select * from assinatura where status = 'Pago'";;
+        $sqlRenovacao = "select * from assinatura where status = 'Pago' and cliente = $cliente";
         $rsRenovavao = $conn->query($sqlRenovacao);
 
         if ($rsRenovavao->rowCount() == 1) {

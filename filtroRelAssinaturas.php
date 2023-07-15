@@ -100,7 +100,7 @@ require_once "lib/functions.php";
                                             <div class="col-lg-8">
                                                 <div class="page-header-title">
                                                     <div class="d-inline">
-                                                        <h4>Clientes</h4>
+                                                        <h4>Assinaturas</h4>
                                                     </div>
                                                 </div>
                                             </div>
@@ -110,7 +110,7 @@ require_once "lib/functions.php";
                                                         <li class="breadcrumb-item">
                                                             <a href="dashboard.php"> <i class=" feather icon-home"></i> </a>
                                                         </li>
-                                                        <li class="breadcrumb-item"><a href="#">Clientes</a>
+                                                        <li class="breadcrumb-item"><a href="#">Assinaturas</a>
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -134,6 +134,14 @@ require_once "lib/functions.php";
                                                                         <option value="T">Todas</option>
                                                                         <option value="V">Vigênte</option>
                                                                         <option value="E">Encerrada</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-sm-2">
+                                                                    <label for="fstatus">Status</label>
+                                                                    <select name="fstatus" id="fvigencia" class="form-control">
+                                                                        <option value="T">Todas</option>
+                                                                        <option value="Pago">Pago</option>
+                                                                        <option value="Em Aberto">Em Aberto</option>
                                                                     </select>
                                                                 </div>
                                                                 <div class="col-sm-2">

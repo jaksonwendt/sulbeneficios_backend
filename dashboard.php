@@ -88,13 +88,12 @@ require_once "lib/functions.php";
                                 <div class="page-wrapper">
                                     <div class="page-body">
                                         <div class="row">
-                                            <!-- task, page, download counter  start -->
                                             <div class="col-xl-3 col-md-6">
                                                 <div class="card">
                                                     <div class="card-block">
                                                         <div class="row align-items-center">
                                                             <div class="col-8">
-                                                                <h4 class="text-c-green f-w-600"><?= $conn->query("select count(*) from assinatura where fim >= now()")->fetchColumn() ?></h4>
+                                                                <h4 class="text-c-green f-w-600"><?= $conn->query("select distinct nome, cpf from clientes, assinatura where clientes.id = assinatura.cliente and fim >= now() and status = 'Pago'")->rowCount() ?></h4>
                                                                 <h6 class="text-muted m-b-0">Assinaturas ativas</h6>
                                                             </div>
                                                             <div class="col-4 text-right">
@@ -119,8 +118,8 @@ require_once "lib/functions.php";
                                                     <div class="card-block">
                                                         <div class="row align-items-center">
                                                             <div class="col-8">
-                                                                <h4 class="text-c-pink f-w-600"><?= $conn->query("select count(*) from assinatura where fim <= now()")->fetchColumn() ?></h4>
-                                                                <h6 class="text-muted m-b-0">Assinaturas invativas</h6>
+                                                                <h4 class="text-c-pink f-w-600"><?= $conn->query("select distinct nome, cpf as qtde from clientes, assinatura where clientes.id = assinatura.cliente and fim <= now() and status = 'Pago' and clientes.id not in (select distinct clientes.id from clientes, assinatura where clientes.id = assinatura.cliente and fim >= now() and status = 'Pago')")->rowCount() ?></h4>
+                                                                <h6 class="text-muted m-b-0">Assinaturas inativas</h6>
                                                             </div>
                                                             <div class="col-4 text-right">
                                                                 <i class="feather icon-file-text f-28"></i>
@@ -190,151 +189,63 @@ require_once "lib/functions.php";
                                                     </div>
                                                 </div>
                                             </div>
-                                            <!-- task, page, download counter  end -->
-
-                                            <!-- visitor start -->
-                                            <div class="col-xl-7 col-md-12">
-                                                <div class="card">
-                                                    <div class="card-block bg-c-green">
-                                                        <span style="color: #FFF">Vencimento das próximas assinaturas</span>
-                                                        <div id="grafico-mensal" style="height: 360px"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- visitor end -->
-                                            <div class="col-xl-5 col-md-6">
+                                            <div class="col-md-12 col-lg-6">
                                                 <div class="card">
                                                     <div class="card-header">
-                                                        <h5>Assinaturas por Status</h5>
+                                                        <h5>Faturamento</h5>
                                                     </div>
                                                     <div class="card-block">
-                                                        <canvas id="grafico-status" height="250"></canvas>
-                                                    </div>
-                                                    <div class="card-footer ">
-                                                        <div class="row text-center b-t-default">
-                                                            <?php
-                                                            $total = $conn->query("select count(*) from assinatura")->fetchColumn();
-
-                                                            if ($total > 0) {
-                                                                $ativas = $conn->query("select count(*) from assinatura where fim >= now()")->fetchColumn() / $total;
-                                                                $inativas = $conn->query("select count(*) from assinatura where fim <= now()")->fetchColumn() / $total;
-                                                            } else {
-                                                                $ativas = 0;
-                                                                $inativas = 0;
-                                                            }
-                                                            ?>
-                                                            <div class="col-6 b-r-default m-t-15">
-                                                                <h5><?= round($ativas * 100) ?>%</h5>
-                                                                <p class="text-muted m-b-0">Ativas</p>
-                                                            </div>
-                                                            <div class="col-6 b-r-default m-t-15">
-                                                                <h5><?= round($inativas * 100) ?>%</h5>
-                                                                <p class="text-muted m-b-0">Inativas</p>
-                                                            </div>
-                                                        </div>
+                                                        <canvas id="faturamentolinha"></canvas>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-xl-7 col-md-12">
+                                            <div class="col-md-12 col-lg-6">
                                                 <div class="card">
-                                                    <div class="card-block bg-c-yellow">
-                                                        <span style="color: #FFF">Faturamento</span>
-                                                        <div id="grafico-faturamento" style="height: 360px"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <!-- sale start -->
-                                            <div class="col-xl-5 col-md-12">
-                                                <div class="card table-card">
                                                     <div class="card-header">
-                                                        <h5>Top 5 cidades (assinaturas)</h5>
+                                                        <h5>Faixa de idade</h5>
                                                     </div>
                                                     <div class="card-block">
-                                                        <div class="table-responsive">
-                                                            <table class="table table-hover table-borderless">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Cidade</th>
-                                                                        <th class="text-center">Assinaturas</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <?php
-                                                                    $sql = "select cidade, count(*) as qtde from assinatura, clientes where clientes.id = assinatura.cliente group by cidade";
-                                                                    $rs = $conn->query($sql);
-
-                                                                    if ($rs->rowCount() > 0) {
-                                                                        while ($ln = $rs->fetch(PDO::FETCH_ASSOC)) {
-                                                                    ?>
-                                                                            <tr>
-                                                                                <td><?= $ln['cidade'] ?></td>
-                                                                                <td class="text-center"><?= $ln['qtde'] ?></td>
-                                                                            </tr>
-                                                                    <?php
-                                                                        }
-                                                                    }
-                                                                    ?>
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
+                                                        <canvas id="faixadeidade"></canvas>
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            <div class="col-xl-4 col-md-12">
-                                                <div class="card table-card">
+                                            <div class="col-md-12 col-lg-6">
+                                                <div class="card">
                                                     <div class="card-header">
-                                                        <h5>Top 5 cidades (Utilização)</h5>
+                                                        <h5>Pessoas por cidade</h5>
                                                     </div>
                                                     <div class="card-block">
-                                                        <div class="table-responsive">
-                                                            <table class="table table-hover table-borderless">
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>Cidade</th>
-                                                                        <th class="text-center">Assinaturas</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody>
-                                                                    <?php
-                                                                    $sql = "select cidades.cidade, count(*) as qtde from utilizacao, comercio, cidades where utilizacao.comercio = comercio.id and comercio.cidade = cidades.id";
-                                                                    $rs = $conn->query($sql);
-
-                                                                    if ($rs->rowCount() > 0) {
-                                                                        while ($ln = $rs->fetch(PDO::FETCH_ASSOC)) {
-                                                                    ?>
-                                                                            <tr>
-                                                                                <td><?= $ln['cidade'] ?></td>
-                                                                                <td class="text-center"><?= $ln['qtde'] ?></td>
-                                                                            </tr>
-                                                                    <?php
-                                                                        }
-                                                                    }
-                                                                    ?>
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
+                                                        <canvas id="graficocidade"></canvas>
                                                     </div>
                                                 </div>
                                             </div>
-
+                                            <div class="col-md-12 col-lg-6">
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <h5>Uso por comércio</h5>
+                                                    </div>
+                                                    <div class="card-block">
+                                                        <canvas id="graficocomercio"></canvas>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-12 col-lg-3">
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <h5>Gênero</h5>
+                                                    </div>
+                                                    <div class="card-block">
+                                                        <canvas id="graficogeneros"></canvas>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <div class="col-xl-3 col-md-6">
                                                 <div class="card">
                                                     <div class="card-block text-center">
                                                         <i class="feather icon-mail text-c-lite-green d-block f-40"></i>
-                                                        <h4 class="m-t-15"><span class="text-c-lite-green"><?= $conn->query("select count(*) from perguntas where status = 2")->fetchColumn() ?></span> Perguntas</h4>
+                                                        <h4 class="m-t-15"><span class="text-c-lite-green"><?= $conn->query("select count(*) from perguntas where status = 1")->fetchColumn() ?></span> Perguntas</h4>
                                                         <p class="m-b-10">Perguntas sem resposta</p>
                                                         <button class="btn btn-primary btn-sm btn-round" id="btnPergunta">Ver perguntas</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-xl-3 col-md-6">
-                                                <div class="card">
-                                                    <div class="card-block text-center">
-                                                        <i class="feather icon-mail text-c-green d-block f-40"></i>
-                                                        <h4 class="m-t-15"><span class="text-c-blgreenue"><?= $conn->query("select count(*) from perguntas where status = 2")->fetchColumn() ?></span> Perguntas</h4>
-                                                        <p class="m-b-10">Perguntas com respostas enviadas</p>
-                                                        <button class="btn btn-success btn-sm btn-round" id="btnPergunta">Ver perguntas</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -418,161 +329,321 @@ require_once "lib/functions.php";
     <script type="text/javascript" src="assets\js\script.js"></script>
 
     <script>
-        var chart = AmCharts.makeChart("grafico-mensal", {
-            "type": "serial",
-            "hideCredits": true,
-            "theme": "light",
-            "dataProvider": [
-                <?php
-                $sql = "select fim, count(*) as qtde from assinatura where fim >= now() group by fim";
-                $rs = $conn->query($sql);
+        /*  FATURAMENTO LINHA */
+        <?php
 
-                if ($rs->rowCount() > 0) {
-                    while ($ln = $rs->fetch(PDO::FETCH_ASSOC)) {
-                ?> {
-                            "type": "<?= normalizaData($ln['fim']) ?>",
-                            "visits": <?= $ln['qtde'] ?>
-                        },
-                <?php
+        $sql = "SELECT MONTH(data) AS mes, YEAR(data) AS ano, SUM(valor) AS total FROM assinatura WHERE status = 'Pago' AND data >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH) GROUP BY YEAR(data), MONTH(data) ORDER BY YEAR(data), MONTH(data)";
+        $rs = $conn->query($sql);
+
+        if ($rs->rowCount() > 0) {
+            $dados = $rs->fetchAll(PDO::FETCH_ASSOC);
+
+        ?>
+            var data = {
+                labels: [
+                    <?php
+                    foreach ($dados as $mes) {
+                        echo "'" . obterMesAbreviado($mes['mes']) . "',";
                     }
-                }
-                ?>
-            ],
-            "valueAxes": [{
-                "gridAlpha": 0.3,
-                "gridColor": "#fff",
-                "axisColor": "transparent",
-                "color": '#fff',
-                "dashLength": 0
-            }],
-            "gridAboveGraphs": true,
-            "startDuration": 1,
-            "graphs": [{
-                "balloonText": "Assinaturas: <b>[[value]]</b>",
-                "fillAlphas": 1,
-                "lineAlpha": 1,
-                "lineColor": "#fff",
-                "type": "column",
-                "valueField": "visits",
-                "columnWidth": 0.5
-            }],
-            "chartCursor": {
-                "categoryBalloonEnabled": false,
-                "cursorAlpha": 0,
-                "zoomable": false
-            },
-            "categoryField": "type",
-            "categoryAxis": {
-                "gridPosition": "start",
-                "gridAlpha": 0,
-                "axesAlpha": 0,
-                "lineAlpha": 0,
-                "fontSize": 12,
-                "color": '#fff',
-                "tickLength": 0
-            },
-            "export": {
-                "enabled": false
-            }
-
-        });
-
-        var chart = AmCharts.makeChart("grafico-faturamento", {
-            "type": "serial",
-            "hideCredits": true,
-            "theme": "light",
-            "dataProvider": [
-                <?php
-                $sql = "SELECT DATE_FORMAT(data, '%Y-%m') AS mes, SUM(valor) AS soma FROM assinatura GROUP BY mes";
-                $rs = $conn->query($sql);
-
-                if ($rs->rowCount() > 0) {
-                    while ($ln = $rs->fetch(PDO::FETCH_ASSOC)) {
-                ?> {
-                            "type": "<?= normalizaData($ln['mes']) ?>",
-                            "visits": <?= $ln['soma'] ?>
-                        },
-                <?php
-                    }
-                }
-                ?>
-            ],
-            "valueAxes": [{
-                "gridAlpha": 0.3,
-                "gridColor": "#fff",
-                "axisColor": "transparent",
-                "color": '#fff',
-                "dashLength": 0
-            }],
-            "gridAboveGraphs": true,
-            "startDuration": 1,
-            "graphs": [{
-                "balloonText": "Valor em R$: <b>[[value]]</b>",
-                "fillAlphas": 1,
-                "lineAlpha": 1,
-                "lineColor": "#fff",
-                "type": "column",
-                "valueField": "visits",
-                "columnWidth": 0.5
-            }],
-            "chartCursor": {
-                "categoryBalloonEnabled": false,
-                "cursorAlpha": 0,
-                "zoomable": false
-            },
-            "categoryField": "type",
-            "categoryAxis": {
-                "gridPosition": "start",
-                "gridAlpha": 0,
-                "axesAlpha": 0,
-                "lineAlpha": 0,
-                "fontSize": 12,
-                "color": '#fff',
-                "tickLength": 0
-            },
-            "export": {
-                "enabled": false
-            }
-
-        });
-
-
-
-
-        var ctx = document.getElementById("grafico-status").getContext("2d");
-        window.myDoughnut = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
+                    ?>
+                ],
                 datasets: [{
+                    label: 'R$',
                     data: [
-                        <?=
-                        $conn->query("select count(*) from assinatura where fim >= now()")->fetchColumn()
-                        ?>,
-                        <?=
-                        $conn->query("select count(*) from assinatura where fim <= now()")->fetchColumn()
+                        <?php
+                        foreach ($dados as $mes) {
+                            echo "'" . $mes['total'] . "',";
+                        }
                         ?>
                     ],
-                    backgroundColor: ["#fe9365", "#01a9ac", "#fe5d70"],
-                    label: 'Dataset 1'
-                }],
-                labels: ["Ativas", "Vencidas"]
-            },
-            options: {
-                maintainAspectRatio: false,
+                    backgroundColor: 'rgba(10, 194, 130, 0.2)',
+                    borderColor: 'rgba(10, 194, 130, 1)',
+                    borderWidth: 2
+                }]
+            };
+
+            var options = {
                 responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
                 legend: {
-                    position: 'bottom',
+                    display: false
                 },
-                title: {
-                    display: true,
-                    text: "",
+            };
+
+            var ctx = document.getElementById('faturamentolinha').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: data,
+                options: options
+            });
+        <?php
+        }
+        ?>
+
+        /* FAIXA DE IDADE */
+
+        <?php
+
+        $sql = "SELECT
+        CASE
+          WHEN TIMESTAMPDIFF(YEAR, datanasc, CURDATE()) BETWEEN 16 AND 24 THEN '16-24'
+          WHEN TIMESTAMPDIFF(YEAR, datanasc, CURDATE()) BETWEEN 25 AND 35 THEN '25-35'
+          WHEN TIMESTAMPDIFF(YEAR, datanasc, CURDATE()) BETWEEN 36 AND 45 THEN '36-45'
+          WHEN TIMESTAMPDIFF(YEAR, datanasc, CURDATE()) BETWEEN 46 AND 55 THEN '46-55'
+          ELSE '56+'
+        END AS faixa_etaria,
+        COUNT(*) AS quantidade
+      FROM
+        clientes, assinatura
+      WHERE
+          clientes.id = assinatura.cliente and
+          assinatura.fim >= now() and
+          assinatura.status = 'Pago'
+      GROUP BY
+        faixa_etaria
+      ORDER BY
+        faixa_etaria;";
+        $rs = $conn->query($sql);
+
+        if ($rs->rowCount() > 0) {
+            $dados = $rs->fetchAll(PDO::FETCH_ASSOC);
+
+        ?>
+
+            var ctx = document.getElementById('faixadeidade').getContext('2d');
+
+            var data = {
+                labels: [
+                    <?php
+                    foreach ($dados as $faixa) {
+                        echo "'" . $faixa['faixa_etaria'] . "',";
+                    }
+                    ?>
+                ],
+                datasets: [{
+                    label: 'Quantidade de Pessoas',
+                    data: [
+                        <?php
+                        foreach ($dados as $faixa) {
+                            echo "'" . $faixa['quantidade'] . "',";
+                        }
+                        ?>
+                    ],
+                    backgroundColor: 'rgba(10, 194, 130, 0.2)',
+                    borderColor: 'rgba(10, 194, 130, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            var options = {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    }
                 },
-                animation: {
-                    animateScale: true,
-                    animateRotate: true
-                }
-            }
-        });
+                legend: {
+                    display: false
+                },
+            };
+
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: options
+            });
+
+        <?php
+        }
+        ?>
+
+        /* CIDADE*/
+
+        <?php
+
+        $sql = "SELECT
+                cidade,
+                COUNT(*) AS quantidade
+                FROM
+                clientes, assinatura
+                WHERE
+                clientes.id = assinatura.cliente and
+                assinatura.fim >= now() and
+                assinatura.status = 'Pago'
+                GROUP BY
+                cidade
+                ORDER BY
+                cidade;";
+        $rs = $conn->query($sql);
+
+        if ($rs->rowCount() > 0) {
+            $dados = $rs->fetchAll(PDO::FETCH_ASSOC);
+
+        ?>
+
+            var ctx = document.getElementById('graficocidade').getContext('2d');
+
+            var data = {
+                labels: [
+                    <?php
+                    foreach ($dados as $cidade) {
+                        echo "'" . $cidade['cidade'] . "',";
+                    }
+                    ?>
+                ],
+                datasets: [{
+                    label: 'Quantidade de Pessoas',
+                    data: [
+                        <?php
+                        foreach ($dados as $cidade) {
+                            echo "'" . $cidade['quantidade'] . "',";
+                        }
+                        ?>
+                    ],
+                    backgroundColor: 'rgba(10, 194, 130, 0.2)',
+                    borderColor: 'rgba(10, 194, 130, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            var options = {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    }
+                },
+                legend: {
+                    display: false
+                },
+            };
+
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: options
+            });
+
+        <?php
+        }
+        ?>
+
+        /* GÊNERO */
+
+        <?php
+
+        $sql = "SELECT
+                    genero,
+                COUNT(*) AS quantidade
+                FROM
+                clientes, assinatura
+                WHERE
+                    clientes.id = assinatura.cliente and
+                    assinatura.fim >= now() and
+                    assinatura.status = 'Pago'
+                GROUP BY
+                genero
+                ORDER BY
+                genero desc";
+        $rs = $conn->query($sql);
+
+        if ($rs->rowCount() > 0) {
+            $dados = $rs->fetchAll(PDO::FETCH_ASSOC);
+
+        ?>
+
+            var ctx = document.getElementById('graficogeneros').getContext('2d');
+
+            // Dados do gráfico
+            var data = {
+                labels: [<?php
+                            foreach ($dados as $faixa) {
+                                echo "'" . $faixa['genero'] . "',";
+                            }
+                            ?>],
+                datasets: [{
+                    data: [<?php
+                            foreach ($dados as $faixa) {
+                                echo "'" . $faixa['quantidade'] . "',";
+                            }
+                            ?>],
+                    backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(192, 75, 75, 0.2)'],
+                    borderColor: ['rgba(75, 192, 192, 1)', 'rgba(192, 75, 75, 1)'],
+                    borderWidth: 1
+                }]
+            };
+
+            // Opções do gráfico
+            var options = {
+                responsive: true
+            };
+
+            // Criar o gráfico de pizza
+            var myChart = new Chart(ctx, {
+                type: 'pie',
+                data: data,
+                options: options
+            });
+        <?php
+        }
+        ?>
+
+        /* COMÉRCIO*/
+
+        <?php
+
+        $sql = "select comercio.nome, count(*) as qtde from utilizacao, comercio where utilizacao.comercio = comercio.id group by comercio.nome";
+        $rs = $conn->query($sql);
+
+        if ($rs->rowCount() > 0) {
+            $dados = $rs->fetchAll(PDO::FETCH_ASSOC);
+
+        ?>
+
+            var ctx = document.getElementById('graficocomercio').getContext('2d');
+
+            var data = {
+                labels: [
+                    <?php
+                    foreach ($dados as $comercio) {
+                        echo "'" . $comercio['nome'] . "',";
+                    }
+                    ?>
+                ],
+                datasets: [{
+                    label: 'Quantidade de Pessoas',
+                    data: [6, 4, 9],
+                    backgroundColor: 'rgba(10, 194, 130, 0.2)',
+                    borderColor: 'rgba(10, 194, 130, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            var options = {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    }
+                },
+                legend: {
+                    display: false
+                },
+            };
+
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: options
+            });
+
+        <?php
+        }
+        ?>
 
         $("#btnPergunta").on("click", function(e) {
             e.preventDefault();

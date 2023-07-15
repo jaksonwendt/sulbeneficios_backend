@@ -27,5 +27,7 @@ if ($cpf != "") {
         disparaWhatsApp($whatsapp, "Sua nova senha é: $senha");
 
         echo "Senha enviada.";
+    }else{
+        echo "CPF não localizado";
     }
 }

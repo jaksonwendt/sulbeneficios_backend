@@ -176,6 +176,9 @@ function gerarSenha($tamanho, $usaLetras = true, $usaLetrasMaiusculas = true, $u
 
 function disparaWhatsApp($numero, $texto)
 {
+
+	$numero = removerNaoNumericos($numero);
+
 	$curl = curl_init();
 	curl_setopt_array($curl, array(
 		CURLOPT_URL => "https://api.z-api.io/instances/3BE5ED1D39B62070FC239633137BF331/token/15F6C2471F9E8ED80E2743BF/send-text",
@@ -185,7 +188,7 @@ function disparaWhatsApp($numero, $texto)
 		CURLOPT_TIMEOUT => 30,
 		CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 		CURLOPT_CUSTOMREQUEST => "POST",
-		CURLOPT_POSTFIELDS => "{\"phone\": \"$numero\", \"message\": \"$texto\"}",
+		CURLOPT_POSTFIELDS => "{\"phone\": \"55$numero\", \"message\": \"$texto\"}",
 		CURLOPT_HTTPHEADER => array(
 			"content-type: application/json"
 		),
@@ -199,5 +202,35 @@ function disparaWhatsApp($numero, $texto)
 		return "cURL Error #:" . $err;
 	} else {
 		return "Tudo ok" . $response;
+	}
+}
+
+function removerNaoNumericos($string)
+{
+	$apenasNumeros = preg_replace("/[^0-9]/", "", $string);
+	return $apenasNumeros;
+}
+
+function obterMesAbreviado($numeroMes)
+{
+	$mesesAbreviados = array(
+		'Jan',
+		'Fev',
+		'Mar',
+		'Abr',
+		'Mai',
+		'Jun',
+		'Jul',
+		'Ago',
+		'Set',
+		'Out',
+		'Nov',
+		'Dez'
+	);
+
+	if ($numeroMes >= 1 && $numeroMes <= 12) {
+		return $mesesAbreviados[$numeroMes - 1];
+	} else {
+		return 'Mês inválido';
 	}
 }

@@ -168,7 +168,7 @@ if ($_REQUEST['action'] == 'insert') {
                                                         <li class="breadcrumb-item">
                                                             <a href="dashboard.php"> <i class="feather icon-home"></i> </a>
                                                         </li>
-                                                        <li class="breadcrumb-item"><a href="#">Clinte</a>
+                                                        <li class="breadcrumb-item"><a href="#">Cliente</a>
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -186,6 +186,10 @@ if ($_REQUEST['action'] == 'insert') {
                                                         </li>
                                                         <li class="nav-item">
                                                             <a class="nav-link" data-toggle="tab" href="#assinaturas" role="tab" aria-expanded="false">Assinaturas</a>
+                                                            <div class="slide"></div>
+                                                        </li>
+                                                        <li class="nav-item">
+                                                            <a class="nav-link" data-toggle="tab" href="#beneficios" role="tab" aria-expanded="false">Uso de benefício</a>
                                                             <div class="slide"></div>
                                                         </li>
                                                     </ul>
@@ -343,7 +347,7 @@ if ($_REQUEST['action'] == 'insert') {
                                                                                             <th>Início</th>
                                                                                             <th>Término</th>
                                                                                             <th>Vigência</th>
-                                                                                            <th>Valor</th>
+                                                                                            <th class="text-right">Valor</th>
                                                                                             <th>Ações</th>
                                                                                         </tr>
                                                                                     </thead>
@@ -355,7 +359,7 @@ if ($_REQUEST['action'] == 'insert') {
                                                                                             $rs = $conn->query($sql);
 
                                                                                             if ($rs->rowCount() > 0) {
-
+                                                                                                $total = 0;
 
                                                                                                 while ($ln = $rs->fetch(PDO::FETCH_ASSOC)) {
 
@@ -374,6 +378,10 @@ if ($_REQUEST['action'] == 'insert') {
                                                                                                         $vigencia = "<span class='label label-danger'>Encerrada</span>";
                                                                                                     }
 
+                                                                                                    $total += $ln['valor'];
+
+
+
                                                                                         ?>
                                                                                                     <tr>
                                                                                                         <td><?= normalizaData($ln['data']) ?></td>
@@ -386,8 +394,73 @@ if ($_REQUEST['action'] == 'insert') {
                                                                                                             <a class="btn btn-danger btn-sm" action="#" onclick="excluirAssinatura(<?= $id ?>, <?= $ln['id'] ?>)"><i class="fa fa-trash"></i> Excluir</a>
                                                                                                         </td>
                                                                                                     </tr>
-                                                                                        <?php
+                                                                                                <?php
                                                                                                 }
+                                                                                                ?>
+                                                                                                <tr>
+                                                                                                    <td colspan="5"><strong>Total</strong></td>
+                                                                                                    <td class="text-right"><strong>R$ <?= moedaUsuario($total) ?></strong></td>
+                                                                                                    <td></td>
+                                                                                                </tr>
+                                                                                        <?php
+                                                                                            }
+                                                                                        }
+                                                                                        ?>
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="tab-pane" id="beneficios" role="tabpanel">
+                                                        <div class="row">
+                                                            <div class="col-xl-12">
+                                                                <div class="row">
+                                                                    <div class="col-sm-12">
+                                                                        <div class="card">
+                                                                            <div class="card-block contact-details">
+                                                                                <br><br>
+                                                                                <table id="simpletable" class="table table-striped table-bordered nowrap">
+                                                                                    <thead>
+                                                                                        <tr>
+                                                                                            <th>Data</th>
+                                                                                            <th>Comércio</th>
+                                                                                            <th class="text-right">Valor</th>
+                                                                                        </tr>
+                                                                                    </thead>
+                                                                                    <tbody>
+                                                                                        <?php
+
+                                                                                        if (!empty($id)) {
+                                                                                            $sql = "select nome, valor, data from utilizacao, comercio where utilizacao.comercio = comercio.id and cliente = $id order by data desc";
+                                                                                            $rs = $conn->query($sql);
+
+                                                                                            if ($rs->rowCount() > 0) {
+
+                                                                                                $total = 0;
+
+                                                                                                while ($ln = $rs->fetch(PDO::FETCH_ASSOC)) {
+
+                                                                                                    $total += $ln['valor'];
+
+                                                                                        ?>
+                                                                                                    <tr>
+
+                                                                                                        <td><?= normalizaData($ln['data']) ?></td>
+                                                                                                        <td><?= $ln['nome'] ?></td>
+                                                                                                        <td class="text-right">R$ <?= moedaUsuario($ln['valor']) ?></td>
+                                                                                                    </tr>
+                                                                                                <?php
+                                                                                                }
+                                                                                                ?>
+                                                                                                <tr>
+                                                                                                    <td colspan="2"><strong>Total</strong></td>
+                                                                                                    <td class="text-right"><strong>R$ <?= moedaUsuario($total) ?></strong></td>
+                                                                                                </tr>
+                                                                                        <?php
                                                                                             }
                                                                                         }
                                                                                         ?>

@@ -137,11 +137,19 @@ require_once "lib/functions.php";
                                                                     </select>
                                                                 </div>
                                                                 <div class="col-sm-2">
-                                                                    <label for="fdatainicio">Data Início:</label>
+                                                                    <label for="fstatus">Status</label>
+                                                                    <select name="fstatus" id="fstatus" class="form-control">
+                                                                        <option value="T">Todas</option>
+                                                                        <option value="Pago">Pago</option>
+                                                                        <option value="Em Aberto">Em Aberto</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-sm-2">
+                                                                    <label for="fdatainicio">Data Contratação - Início:</label>
                                                                     <input type="date" class="form-control" name="fdatainicio" id="fdatainicio">
                                                                 </div>
                                                                 <div class="col-sm-2">
-                                                                    <label for="fdatafinal">Data Final:</label>
+                                                                    <label for="fdatafinal">Data Contratação - Final:</label>
                                                                     <input type="date" class="form-control" name="fdatafinal" id="fdatafinal">
                                                                 </div>
                                                             </div>
@@ -178,6 +186,10 @@ require_once "lib/functions.php";
 
                                                                     if (!empty($_REQUEST['fvigencia']) && $_REQUEST['fvigencia'] != 'T') {
                                                                         $sql .= " and fim >= now()";
+                                                                    }
+
+                                                                    if (!empty($_REQUEST['fstatus']) && $_REQUEST['fstatus'] != 'T') {
+                                                                        $sql .= " and status = '" . $_REQUEST['fstatus'] . "'";
                                                                     }
 
                                                                     $rs = $conn->query($sql);

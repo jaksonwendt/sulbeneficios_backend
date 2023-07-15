@@ -19,4 +19,17 @@ if ($rs->rowCount() > 0) {
     $dados = $rs->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode($dados, JSON_PRETTY_PRINT);
+} else {
+    $sql = "select nome from clientes where md5(clientes.id) = '$id'";
+    $rs = $conn->query($sql);
+
+    $nome = $rs->fetch(PDO::FETCH_ASSOC);
+
+    $dados = array();
+    $ln['nome'] = $nome;
+    $ln['fim'] = '1999-12-31';
+    $ln['valor'] = 0;
+    array_push($dados, $ln);
+
+    echo json_encode($dados, JSON_PRETTY_PRINT);
 }
