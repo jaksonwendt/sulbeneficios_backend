@@ -24,25 +24,36 @@ if ($payment->status == 'approved') {
     if ($rs->rowCount() > 0) {
         $cliente = $rs->fetchColumn();
 
-        $sqlRenovacao = "select * from assinatura where status = 'Pago' and cliente = $cliente";
-        $rsRenovavao = $conn->query($sqlRenovacao);
+		$sql = "select nome, whatsapp from clientes where id = $cliente";
+		$rs = $conn->query($sql);
 
-        if ($rsRenovavao->rowCount() == 1) {
+		if ($rs->rowCount() > 0) {
+			$dados = $rs->fetch(PDO::FETCH_ASSOC);
+			
+			//Verificar se é cadastro novo ou renovação
+			$sql = "select * from assinatura where cliente = $cliente and status = 'Pago'";
+			$rs = $conn->query($sql);
+			
+			if ($rs->rowCount == 1){
+				
+				$texto = "Olá " . $dados['nome'] . ", seu pagamento foi confirmado. Faça login e aproveite todos os benefícios do aplicativo.";
+				disparaWhatsApp($dados['whatsapp'], $texto);
+			
+				//Credita pontos no primeiro cadastro
+				$texto = utf8_decode("Cadastro completo com sucesso");
+				$sql = "insert into pontos (cliente, descricao, data, pontos, tipo) values ($cliente, '$texto', now(), '10', 'C')";
+				//$conn->query($sql);	
 
-            $pass = gerarSenha(6, false, false, true, false);
-            $senha = md5($pass);
-
-            $conn->query("update clientes set password = '$senha' where id = $cliente");
-
-            $sql = "select nome, whatsapp from clientes where id = $cliente";
-            $rs = $conn->query($sql);
-
-            if ($rs->rowCount() > 0) {
-                $dados = $rs->fetch(PDO::FETCH_ASSOC);
-                $texto = "Olá " . $dados['nome'] . ", sua senha para acessar o aplicativo é $pass.";
-
-                disparaWhatsApp($dados['whatsapp'], $texto);
-            }
-        }
+				//Verificar se foi indicado por alguém e creditar os pontos - 2 pontos para indicante
+			}else{
+				$texto = "Olá " . $dados['nome'] . ", seu pagamento foi confirmado.";
+				disparaWhatsApp($dados['whatsapp'], $texto);
+				
+				//Verifica pagamento de 6 meses sem atrasos - 10 pontos
+				
+				//Verifica renovação antes do vencimento - 2 pontos
+			}
+			
+		}
     }
 }

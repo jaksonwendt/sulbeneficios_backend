@@ -12,12 +12,13 @@ if ($_REQUEST['action'] == 'insert') {
     $nome = anti_injection($_REQUEST['nome']);
     $categoria = anti_injection($_REQUEST['categoria']);
     $cidade = anti_injection($_REQUEST['cidade']);
-    $desconto = moedaBanco($_REQUEST['desconto']);
+    $desconto = anti_injection($_REQUEST['desconto']);
     $ativo = anti_injection($_REQUEST['ativo']);
+    $whatsapp = anti_injection($_REQUEST['whatsapp']);
 
     $logo = imagemBanco($_FILES['logo'], 'storage', 150, 100);
 
-    $sql = "insert into comercio (nome, logo, categoria, cidade, desconto, ativo) values ('$nome', '$logo', '$categoria', '$cidade', '$desconto', '$ativo')";
+    $sql = "insert into comercio (nome, logo, categoria, cidade, desconto, ativo, whatsapp) values ('$nome', '$logo', '$categoria', '$cidade', '$desconto', '$ativo', '$whatsapp')";
     $conn->query($sql);
 
     header("location: listaComercios.php");
@@ -27,15 +28,16 @@ if ($_REQUEST['action'] == 'insert') {
     $nome = anti_injection($_REQUEST['nome']);
     $categoria = anti_injection($_REQUEST['categoria']);
     $cidade = anti_injection($_REQUEST['cidade']);
-    $desconto = moedaBanco($_REQUEST['desconto']);
+    $desconto = anti_injection($_REQUEST['desconto']);
     $ativo = anti_injection($_REQUEST['ativo']);
+    $whatsapp = anti_injection($_REQUEST['whatsapp']);
 
     $logo = imagemBanco($_FILES['logo'], 'storage', 150, 100);
 
     if (!empty($logo)) {
-        $sql = "update comercio set nome = '$nome', categoria = '$categoria', cidade = '$cidade', desconto = '$desconto', ativo = '$ativo', logo = '$logo' where id = $id";
+        $sql = "update comercio set nome = '$nome', whatsapp = '$whatsapp', categoria = '$categoria', cidade = '$cidade', desconto = '$desconto', ativo = '$ativo', logo = '$logo' where id = $id";
     } else {
-        $sql = "update comercio set nome = '$nome', categoria = '$categoria', cidade = '$cidade', desconto = '$desconto', ativo = '$ativo' where id = $id";
+        $sql = "update comercio set nome = '$nome', whatsapp = '$whatsapp', categoria = '$categoria', cidade = '$cidade', desconto = '$desconto', ativo = '$ativo' where id = $id";
     }
 
     $conn->query($sql);

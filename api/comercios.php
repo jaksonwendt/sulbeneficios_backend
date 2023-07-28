@@ -17,10 +17,23 @@ if (isset($_POST['cidade'])) {
     $sql = "select nome, logo, desconto, categoriaben.categoria from comercio, categoriaben where comercio.categoria = categoriaben.id and ativo = 'S'";
 }
 
+//echo $sql;
+
 $rs = $conn->query($sql);
 
 if ($rs->rowCount() > 0) {
-    $dados = $rs->fetchAll(PDO::FETCH_ASSOC);
+    $dados = array();
 
-    echo json_encode($dados, JSON_PRETTY_PRINT);
+    while ($ln = $rs->fetch(PDO::FETCH_ASSOC)){
+        $comercio = array();
+        $comercio['nome'] = ($ln['nome']);
+        $comercio['logo'] = ($ln['logo']);
+        $comercio['desconto'] = ($ln['desconto']);
+        $comercio['categoria'] = ($ln['categoria']);
+
+        array_push($dados, $comercio);
+    }
+
+
+    echo json_encode($dados, JSON_UNESCAPED_UNICODE);
 }

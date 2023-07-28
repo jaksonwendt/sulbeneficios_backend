@@ -39,6 +39,19 @@ function normalizaDataHora($data, $separador = "-")
 	}
 }
 
+function normalizaDataHora2($data, $separador = "-")
+{
+	$hora = substr($data, 11, 5);
+	$data = substr($data, 0, 10);
+	$nova_data = implode("" . $separador . "", array_reverse(explode("" . $separador . "", $data)));
+	$nova_data = str_replace('-', '/', $nova_data);
+	if ($nova_data == '01/01/1900') {
+		return;
+	} else {
+		return $nova_data . " " . $hora;
+	}
+}
+
 function horaUsuario($hora)
 {
 	$partes = explode(":", $hora);
@@ -182,6 +195,7 @@ function disparaWhatsApp($numero, $texto)
 	$curl = curl_init();
 	curl_setopt_array($curl, array(
 		CURLOPT_URL => "https://api.z-api.io/instances/3BE5ED1D39B62070FC239633137BF331/token/15F6C2471F9E8ED80E2743BF/send-text",
+		//CURLOPT_URL => "https://api.z-api.io/instances/3C0BEFF935A0D04F63E85E1F1E10E177/token/C3BA8E698025FFAB66A010C7/send-text",
 		CURLOPT_RETURNTRANSFER => true,
 		CURLOPT_ENCODING => "",
 		CURLOPT_MAXREDIRS => 10,

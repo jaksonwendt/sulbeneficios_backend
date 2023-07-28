@@ -26,7 +26,7 @@ if ($cliente != "") {
             $dado['categoria'] = $ln['categoria'];
             $dado['id'] = $ln['id'];
             $dado['recebido'] = $ln['status'];
-            $dado['data'] = normalizaData($ln['data']);
+            $dado['data'] = normalizaDataHora2($ln['data']);
             $dado['valor'] = moedaUsuario($ln['valor']);
 
             if ($ln['tipo'] == 'D') {

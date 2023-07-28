@@ -16,6 +16,7 @@ if ($_REQUEST['action'] == 'insert') {
     $cidade = "";
     $desconto = "";
     $ativo = "";
+    $whatsapp = "";
 } elseif ($_REQUEST['action'] == 'edit') {
 
     $action = "dbCadComercio.php?action=edit";
@@ -34,6 +35,7 @@ if ($_REQUEST['action'] == 'insert') {
         $cidade = $dados['cidade'];
         $desconto = $dados['desconto'];
         $ativo = $dados['ativo'];
+        $whatsapp = $dados['whatsapp'];
     } else {
         header("location: listaComercios.php");
     }
@@ -235,7 +237,11 @@ if ($_REQUEST['action'] == 'insert') {
                                                             <div class="form-group row">
                                                                 <div class="col-sm-3">
                                                                     <label for="desconto">Desconto:</label>
-                                                                    <input type="text" name="desconto" id="desconto" class="form-control autonumber" data-a-sep="." data-a-dec="," value="<?= $desconto ?>">
+                                                                    <input type="text" name="desconto" id="desconto" class="form-control" value="<?= $desconto ?>">
+                                                                </div>
+                                                                <div class="col-sm-3">
+                                                                    <label for="whatsapp">WhatsApp:</label>
+                                                                    <input type="text" name="whatsapp" id="whatsapp" class="form-control" placeholder="(99)99999-9999" value="<?= $whatsapp ?>">
                                                                 </div>
                                                                 <div class="col-sm-3">
                                                                     <label for="ativo">Ativo</label>

@@ -32,6 +32,7 @@ if ($id != "" && $hash != "") {
         $dados = $rs->fetch(PDO::FETCH_ASSOC);
 
         $cliente = array();
+        $cliente['id'] = $dados['id'];
         $cliente['nome'] = $dados['nome'];
         $cliente['sobrenome'] = $dados['sobrenome'];
         $cliente['datanasc'] = normalizaData($dados['datanasc']);
@@ -39,6 +40,8 @@ if ($id != "" && $hash != "") {
         $cliente['whatsapp'] = $dados['whatsapp'];
         $cliente['cep'] = $dados['cep'];
         $cliente['cpf'] = $dados['cpf'];
+        $cliente['dataalt'] = $dados['dataalt'];
+        $cliente['indicado'] = $dados['indicado'];
 
         echo json_encode($cliente, JSON_PRETTY_PRINT);
     }

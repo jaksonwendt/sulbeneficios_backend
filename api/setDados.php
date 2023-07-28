@@ -40,6 +40,6 @@ if ($rs->rowCount() > 0) {
         $uf = $endereco->uf;
     }
     //INSERE CLIENTE
-    $sql = "update clientes set nome = '$nome', sobrenome = '$sobrenome', datanasc = '$datanasc', cpf = '$cpf', genero = '$genero', whatsapp = '$whatsapp', cep = '$cep', endereco = '$logradouro', bairro = '$bairro', cidade = '$cidade', estado = '$uf' where id = $cliente";
+    $sql = "update clientes set nome = '$nome', sobrenome = '$sobrenome', datanasc = '$datanasc', cpf = '$cpf', genero = '$genero', whatsapp = '$whatsapp', cep = '$cep', endereco = '$logradouro', bairro = '$bairro', cidade = '$cidade', estado = '$uf', dataalt = now() where id = $cliente";
     $conn->query($sql);
 }
