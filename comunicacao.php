@@ -118,7 +118,7 @@ require_once "lib/functions.php";
                                             <div class="col-sm-12">
                                                 <div class="card">
                                                     <div class="card-block">
-                                                        <form action="#" method="POST">
+                                                        <form action="#" method="POST" id="frmMessage">
                                                             <div class="form-group row">
                                                                 <div class="col-sm-3">
                                                                     <label for="tipo">Tipo:</label>
@@ -147,7 +147,7 @@ require_once "lib/functions.php";
                                                             </div>
                                                             <div class="form-group row">
                                                                 <div class="col-sm-12">
-                                                                    <input type="submit" class="btn btn-success btn-sm" value="Enviar">
+                                                                    <input type="submit" class="btn btn-success btn-sm" id="btnEnviar" value="Enviar">
                                                                 </div>
                                                             </div>
                                                         </form>
@@ -187,6 +187,29 @@ require_once "lib/functions.php";
             var caracteresRestantes = 150 - $(this).val().length;
             $('#contador').text(caracteresRestantes + ' caracteres restantes');
         });
+
+        $("#btnEnviar").on("click", function(e) {
+            e.preventDefault();
+
+            var tipo = $("#tipo").val();
+            var para = $("#para").val();
+            var mensagem = $("#mensagem").val();
+
+            $.ajax({
+                type: 'POST',
+                url: 'ajax/sendCom.php',
+                data: {
+                    tipo: tipo,
+                    para: para,
+                    mensagem: mensagem
+                },
+                success: function(data) {
+                    $("#mensagem").val("");
+                    alert(data);
+                }
+            })
+
+        })
     </script>
 </body>
 
