@@ -143,11 +143,11 @@ require_once "lib/functions.php";
                                                     <div class="card-block">
                                                         <div class="row align-items-center">
                                                             <div class="col-8">
-                                                                <h4 class="text-c-blue f-w-600">R$ <?= moedaUsuario($conn->query("select sum(valor) from sorteio")->fetchColumn()) ?></h4>
-                                                                <h6 class="text-muted m-b-0">Em sorteios</h6>
+                                                                <h4 class="text-c-blue f-w-600"><?= $conn->query("select distinct nome, cpf as qtde from clientes, assinatura where clientes.id = assinatura.cliente and clientes.id not in (select distinct clientes.id from clientes, assinatura where clientes.id = assinatura.cliente and status = 'Pago')")->rowCount() ?></h4>
+                                                                <h6 class="text-muted m-b-0">Nunca pagaram</h6>
                                                             </div>
                                                             <div class="col-4 text-right">
-                                                                <i class="feather icon-calendar f-28"></i>
+                                                                <i class="feather icon-file-text f-28"></i>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -212,7 +212,7 @@ require_once "lib/functions.php";
                                             <div class="col-md-12 col-lg-6">
                                                 <div class="card">
                                                     <div class="card-header">
-                                                        <h5>Pessoas por cidade</h5>
+                                                        <h5>Pessoas por cidade (Assinaturas ativas)</h5>
                                                     </div>
                                                     <div class="card-block">
                                                         <canvas id="graficocidade"></canvas>
@@ -232,7 +232,7 @@ require_once "lib/functions.php";
                                             <div class="col-md-12 col-lg-3">
                                                 <div class="card">
                                                     <div class="card-header">
-                                                        <h5>Gênero</h5>
+                                                        <h5>Gênero (Assinaturas ativas)</h5>
                                                     </div>
                                                     <div class="card-block">
                                                         <canvas id="graficogeneros"></canvas>
@@ -243,7 +243,7 @@ require_once "lib/functions.php";
                                                 <div class="card">
                                                     <div class="card-block text-center">
                                                         <i class="feather icon-mail text-c-lite-green d-block f-40"></i>
-                                                        <h4 class="m-t-15"><span class="text-c-lite-green"><?= $conn->query("select count(*) from perguntas where status = 1")->fetchColumn() ?></span> Perguntas</h4>
+                                                        <h4 class="m-t-15"><span class="text-c-lite-green"><?= $conn->query("select count(*) from perguntas, clientes where clientes.id = perguntas.cliente and status = 1")->fetchColumn() ?></span> Perguntas</h4>
                                                         <p class="m-b-10">Perguntas sem resposta</p>
                                                         <button class="btn btn-primary btn-sm btn-round" id="btnPergunta">Ver perguntas</button>
                                                     </div>
@@ -596,12 +596,11 @@ require_once "lib/functions.php";
 
         <?php
 
-        $sql = "select comercio.nome, count(*) as qtde from utilizacao, comercio where utilizacao.comercio = comercio.id group by comercio.nome";
+        $sql = "select comercio.nome, count(*) as qtde from utilizacao, comercio, clientes where utilizacao.cliente = clientes.id and utilizacao.comercio = comercio.id group by comercio.nome";
         $rs = $conn->query($sql);
 
         if ($rs->rowCount() > 0) {
             $dados = $rs->fetchAll(PDO::FETCH_ASSOC);
-
         ?>
 
             var ctx = document.getElementById('graficocomercio').getContext('2d');
@@ -616,7 +615,15 @@ require_once "lib/functions.php";
                 ],
                 datasets: [{
                     label: 'Quantidade de Pessoas',
-                    data: [6, 4, 9],
+                    data: [
+
+                        <?php
+                        foreach ($dados as $comercio) {
+                            echo "'" . $comercio['qtde'] . "',";
+                        }
+                        ?>
+
+                    ],
                     backgroundColor: 'rgba(10, 194, 130, 0.2)',
                     borderColor: 'rgba(10, 194, 130, 1)',
                     borderWidth: 1
@@ -627,7 +634,7 @@ require_once "lib/functions.php";
                 responsive: true,
                 scales: {
                     y: {
-                        beginAtZero: true,
+                        beginAtZero: true
                     }
                 },
                 legend: {

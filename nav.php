@@ -28,6 +28,12 @@
                 </ul>
             </li>
             <li class="#">
+                <a href="pontuacao.php">
+                    <span class="pcoded-micon"><i class="feather icon-award"></i><b>A</b></span>
+                    <span class="pcoded-mtext">Programa de pontos</span>
+                </a>
+            </li>
+            <li class="#">
                 <a href="comunicacao.php">
                     <span class="pcoded-micon"><i class="feather icon-message-square"></i><b>A</b></span>
                     <span class="pcoded-mtext">Comunicação</span>

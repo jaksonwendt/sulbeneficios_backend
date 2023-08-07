@@ -26,6 +26,7 @@ if ($_REQUEST['action'] == 'insert') {
     $ativo = "";
     $datacad = date("Y-m-d");
     $local = "Painel";
+    $indicado = "";
 } elseif ($_REQUEST['action'] == 'edit') {
 
     $action = "dbCadCliente.php?action=edit";
@@ -53,6 +54,7 @@ if ($_REQUEST['action'] == 'insert') {
         $bairro = $dados['bairro'];
         $cidade = $dados['cidade'];
         $estado = $dados['estado'];
+        $indicado = $dados['indicado'];
     } else {
         header("location: listaClientes.php");
     }
@@ -181,7 +183,7 @@ if ($_REQUEST['action'] == 'insert') {
                                                 <div class="tab-header card">
                                                     <ul class="nav nav-tabs md-tabs tab-timeline" role="tablist" id="mytab">
                                                         <li class="nav-item">
-                                                            <a class="nav-link active" data-toggle="tab" href="#pessoal" role="tab" aria-expanded="true">Informações Pessoais</a>
+                                                            <a class="nav-link active" data-toggle="tab" href="#pessoal" role="tab" aria-expanded="true">Dados Pessoais</a>
                                                             <div class="slide"></div>
                                                         </li>
                                                         <li class="nav-item">
@@ -189,7 +191,15 @@ if ($_REQUEST['action'] == 'insert') {
                                                             <div class="slide"></div>
                                                         </li>
                                                         <li class="nav-item">
-                                                            <a class="nav-link" data-toggle="tab" href="#beneficios" role="tab" aria-expanded="false">Uso de benefício</a>
+                                                            <a class="nav-link" data-toggle="tab" href="#beneficios" role="tab" aria-expanded="false">Descontos</a>
+                                                            <div class="slide"></div>
+                                                        </li>
+                                                        <li class="nav-item">
+                                                            <a class="nav-link" data-toggle="tab" href="#pontuacao" role="tab" aria-expanded="false">Pontuação</a>
+                                                            <div class="slide"></div>
+                                                        </li>
+                                                        <li class="nav-item">
+                                                            <a class="nav-link" data-toggle="tab" href="#indicacao" role="tab" aria-expanded="false">Indicações</a>
                                                             <div class="slide"></div>
                                                         </li>
                                                     </ul>
@@ -198,6 +208,9 @@ if ($_REQUEST['action'] == 'insert') {
                                                     <div class="tab-pane active" id="pessoal" role="tabpanel" aria-expanded="true">
                                                         <div class="card">
                                                             <div class="card-block">
+                                                                <h5 class="card-header-text">Código do assinante: #<?= $id ?></h5>
+                                                                <br>
+                                                                <br>
                                                                 <form action="<?= $action ?>" method="POST" enctype="multipart/form-data">
                                                                     <input type="hidden" name="id" id="id" value="<?= $id ?>">
                                                                     <div class="form-group row">
@@ -313,6 +326,10 @@ if ($_REQUEST['action'] == 'insert') {
                                                                             <label for="estado">Estado:</label>
                                                                             <input type="text" class="form-control" name="estado" id="estado" value="<?= $estado ?>">
                                                                         </div>
+                                                                        <div class="col-sm-2">
+                                                                            <label for="indicado">Indicado por:</label>
+                                                                            <input type="text" class="form-control" name="indicado" id="indicado" value="<?= $indicado ?>">
+                                                                        </div>
                                                                     </div>
                                                                     <div class="form-group row">
                                                                         <div class="col-sm-12">
@@ -342,11 +359,10 @@ if ($_REQUEST['action'] == 'insert') {
                                                                                 <table id="simpletable" class="table table-striped table-bordered nowrap">
                                                                                     <thead>
                                                                                         <tr>
-                                                                                            <th>Data</th>
-                                                                                            <th>Status</th>
+                                                                                            <th>Data da assinatura</th>
                                                                                             <th>Início</th>
                                                                                             <th>Término</th>
-                                                                                            <th>Vigência</th>
+                                                                                            <th>Status</th>
                                                                                             <th class="text-right">Valor</th>
                                                                                             <th>Ações</th>
                                                                                         </tr>
@@ -355,7 +371,7 @@ if ($_REQUEST['action'] == 'insert') {
                                                                                         <?php
 
                                                                                         if (!empty($id)) {
-                                                                                            $sql = "select * from assinatura where cliente = $id";
+                                                                                            $sql = "select * from assinatura where cliente = $id and status = 'Pago'";
                                                                                             $rs = $conn->query($sql);
 
                                                                                             if ($rs->rowCount() > 0) {
@@ -372,23 +388,19 @@ if ($_REQUEST['action'] == 'insert') {
                                                                                                             break;
                                                                                                     }
 
-                                                                                                    if (strtotime($ln['fim']) >= strtotime(date("Y-m-d"))) {
-                                                                                                        $vigencia = "<span class='label label-success'>Vigente</span>";
+                                                                                                    if (strtotime($ln['fim']) <= strtotime(date("Y-m-d"))) {
+                                                                                                        $color = "style='color: red'";
                                                                                                     } else {
-                                                                                                        $vigencia = "<span class='label label-danger'>Encerrada</span>";
+                                                                                                        $color = "";
                                                                                                     }
 
                                                                                                     $total += $ln['valor'];
-
-
-
                                                                                         ?>
                                                                                                     <tr>
                                                                                                         <td><?= normalizaData($ln['data']) ?></td>
-                                                                                                        <td><?= $status ?></td>
                                                                                                         <td><?= normalizaData($ln['inicio']) ?></td>
-                                                                                                        <td><?= normalizaData($ln['fim']) ?></td>
-                                                                                                        <td class="text-center"><?= $vigencia ?></td>
+                                                                                                        <td <?= $color ?>><?= normalizaData($ln['fim']) ?></td>
+                                                                                                        <td><?= $status ?></td>
                                                                                                         <td class="text-right">R$ <?= moedaUsuario($ln['valor']) ?></td>
                                                                                                         <td>
                                                                                                             <a class="btn btn-danger btn-sm" action="#" onclick="excluirAssinatura(<?= $id ?>, <?= $ln['id'] ?>)"><i class="fa fa-trash"></i> Excluir</a>
@@ -398,7 +410,7 @@ if ($_REQUEST['action'] == 'insert') {
                                                                                                 }
                                                                                                 ?>
                                                                                                 <tr>
-                                                                                                    <td colspan="5"><strong>Total</strong></td>
+                                                                                                    <td colspan="4"><strong>Total</strong></td>
                                                                                                     <td class="text-right"><strong>R$ <?= moedaUsuario($total) ?></strong></td>
                                                                                                     <td></td>
                                                                                                 </tr>
@@ -473,6 +485,135 @@ if ($_REQUEST['action'] == 'insert') {
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    <div class="tab-pane" id="pontuacao" role="tabpanel">
+                                                        <div class="row">
+                                                            <div class="col-xl-12">
+                                                                <div class="row">
+                                                                    <div class="col-sm-12">
+                                                                        <div class="card">
+                                                                            <div class="card-block contact-details">
+                                                                                <a class="btn btn-success btn-sm" href="#" data-toggle="modal" data-target="#addpontos"><i class="fa fa-plus"></i> Adicionar</a>
+                                                                                <a class="btn btn-danger btn-sm" href="#" data-toggle="modal" data-target="#removepontos"><i class="fa fa-remove"></i> Resgatar / Remover</a>
+                                                                                <br><br>
+                                                                                <table id="simpletable" class="table table-striped table-bordered nowrap">
+                                                                                    <thead>
+                                                                                        <tr>
+                                                                                            <th>Data</th>
+                                                                                            <th>Descrição</th>
+                                                                                            <th class="text-center">Pontos</th>
+                                                                                            <th>Ações</th>
+                                                                                        </tr>
+                                                                                    </thead>
+                                                                                    <tbody>
+                                                                                        <?php
+
+                                                                                        if (!empty($id)) {
+                                                                                            $sql = "select * from pontos where cliente = $id order by data desc";
+                                                                                            $rs = $conn->query($sql);
+
+                                                                                            if ($rs->rowCount() > 0) {
+
+                                                                                                $total = 0;
+
+                                                                                                while ($ln = $rs->fetch(PDO::FETCH_ASSOC)) {
+
+                                                                                                    $total += $ln['pontos'];
+
+                                                                                                    if ($ln['tipo'] == 'C') {
+                                                                                                        $color = "#0ac282";
+                                                                                                        $pontos = "+" . $ln['pontos'];
+                                                                                                    } else {
+                                                                                                        $color = "#eb3422";
+                                                                                                        $pontos = $ln['pontos'];
+                                                                                                    }
+
+                                                                                        ?>
+                                                                                                    <tr>
+
+                                                                                                        <td><?= normalizaDataHora2($ln['data']) ?></td>
+                                                                                                        <td><?= utf8_encode($ln['descricao']) ?></td>
+                                                                                                        <td class="text-center" style="font-weight: bold; color: <?= $color ?>"><?= $pontos ?></td>
+                                                                                                        <td>
+                                                                                                            <a class="btn btn-danger btn-sm" action="#" onclick="excluirPontos(<?= $id ?>, <?= $ln['id'] ?>)"><i class="fa fa-trash"></i> Excluir</a>
+                                                                                                        </td>
+                                                                                                    </tr>
+                                                                                                <?php
+                                                                                                }
+                                                                                                ?>
+                                                                                                <tr>
+                                                                                                    <td colspan="2"><strong>Total</strong></td>
+                                                                                                    <td class="text-center"><strong><?= $total ?></strong></td>
+                                                                                                    <td></td>
+                                                                                                </tr>
+                                                                                        <?php
+                                                                                            }
+                                                                                        }
+                                                                                        ?>
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="tab-pane" id="indicacao" role="tabpanel">
+                                                        <div class="row">
+                                                            <div class="col-xl-12">
+                                                                <div class="row">
+                                                                    <div class="col-sm-12">
+                                                                        <div class="card">
+                                                                            <div class="card-block contact-details">
+                                                                                <br><br>
+                                                                                <table id="simpletable" class="table table-striped table-bordered nowrap">
+                                                                                    <thead>
+                                                                                        <tr>
+                                                                                            <th>Nome</th>
+                                                                                            <th>Data Cadastro</th>
+                                                                                        </tr>
+                                                                                    </thead>
+                                                                                    <tbody>
+                                                                                        <?php
+
+                                                                                        if (!empty($id)) {
+                                                                                            $sql = "select * from clientes where indicado = $id order by datacad";
+                                                                                            $rs = $conn->query($sql);
+
+                                                                                            if ($rs->rowCount() > 0) {
+
+                                                                                                $total = 0;
+
+                                                                                                while ($ln = $rs->fetch(PDO::FETCH_ASSOC)) {
+
+                                                                                                    $total++;
+
+                                                                                        ?>
+                                                                                                    <tr>
+
+                                                                                                        <td><?= utf8_encode($ln['nome'] . " " . $ln['sobrenome']) ?></td>
+                                                                                                        <td><?= normalizaData($ln['datacad']) ?></td>
+                                                                                                    </tr>
+                                                                                                <?php
+                                                                                                }
+                                                                                                ?>
+                                                                                                <tr>
+                                                                                                    <td colspan="1"><strong>Total</strong></td>
+                                                                                                    <td class="text-left"><strong><?= $total ?></strong></td>
+                                                                                                </tr>
+                                                                                        <?php
+                                                                                            }
+                                                                                        }
+                                                                                        ?>
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -486,6 +627,7 @@ if ($_REQUEST['action'] == 'insert') {
         </div>
     </div>
 
+    <!-- ADD ASSINATURA -->
     <div class="modal fade" id="meuModal" tabindex="-1" role="dialog" aria-labelledby="meuModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -519,7 +661,6 @@ if ($_REQUEST['action'] == 'insert') {
                                 <label for="status">Status</label>
                                 <select name="status" class="form-control" id="status" class="form-control">
                                     <option>Pago</option>
-                                    <option>Em Aberto</option>
                                 </select>
                             </div>
                         </form>
@@ -527,6 +668,82 @@ if ($_REQUEST['action'] == 'insert') {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" id="btnAssinatura">Salvar</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD PONTOS -->
+    <div class="modal fade" id="addpontos" tabindex="-1" role="dialog" aria-labelledby="meuModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="meuModalLabel">Adicionar pontos</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <form action="dbCadCliente.php?action=addpontos" method="POST" id="frmAddPontos">
+                            <input type="hidden" name="cliente" id="cliente" value="<?= $id ?> ">
+                            <input type="hidden" name="tipo" id="tipo" value="C">
+                            <div class="form-group row">
+                                <label for="data">Data cadastro</label>
+                                <input type="datetime" class="form-control" name="datacad" id="datacad" value="<?= date("Y-m-d H:i:s") ?>" readonly>
+                            </div>
+                            <div class="form-group row">
+                                <label for="descricao">Descrição</label>
+                                <input type="text" class="form-control" name="descricao" id="descricao" required>
+                            </div>
+                            <div class="form-group row">
+                                <label for="pontos">Pontos para adicionar</label>
+                                <input type="text" class="form-control" name="pontos" id="pontos" value="0">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btnAddPontos">Salvar</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REMOVE PONTOS -->
+    <div class="modal fade" id="removepontos" tabindex="-1" role="dialog" aria-labelledby="meuModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="meuModalLabel">Adicionar pontos</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <form action="dbCadCliente.php?action=removepontos" method="POST" id="frmRemovePontos">
+                            <input type="hidden" name="cliente" id="cliente" value="<?= $id ?> ">
+                            <input type="hidden" name="tipo" id="tipo" value="D">
+                            <div class="form-group row">
+                                <label for="data">Data cadastro</label>
+                                <input type="datetime" class="form-control" name="datacad" id="datacad" value="<?= date("Y-m-d H:i:s") ?>" readonly>
+                            </div>
+                            <div class="form-group row">
+                                <label for="descricao">Descrição</label>
+                                <input type="text" class="form-control" name="descricao" id="descricao" required>
+                            </div>
+                            <div class="form-group row">
+                                <label for="pontos">Pontos para remover</label>
+                                <input type="text" class="form-control" name="pontos" id="pontos" value="0">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="btnRemovePontos">Salvar</button>
                     <button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
                 </div>
             </div>
@@ -541,12 +758,6 @@ if ($_REQUEST['action'] == 'insert') {
     <script type="text/javascript" src="bower_components\modernizr\js\modernizr.js"></script>
     <script type="text/javascript" src="bower_components\modernizr\js\css-scrollbars.js"></script>
 
-    <!-- Masking js -->
-    <script src="assets\pages\form-masking\inputmask.js"></script>
-    <script src="assets\pages\form-masking\jquery.inputmask.js"></script>
-    <script src="assets\pages\form-masking\autoNumeric.js"></script>
-    <script src="assets\pages\form-masking\form-mask.js"></script>
-
     <script type="text/javascript" src="bower_components\i18next\js\i18next.min.js"></script>
     <script type="text/javascript" src="bower_components\i18next-xhr-backend\js\i18nextXHRBackend.min.js"></script>
     <script type="text/javascript" src="bower_components\i18next-browser-languagedetector\js\i18nextBrowserLanguageDetector.min.js"></script>
@@ -557,6 +768,12 @@ if ($_REQUEST['action'] == 'insert') {
     <script src="assets\js\jquery.mCustomScrollbar.concat.min.js"></script>
     <script type="text/javascript" src="assets\js\script.js"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.6/jquery.inputmask.min.js"></script>
+    <script>
+        $('#cep').inputmask('99999-999');
+        $('#cpf').inputmask('999.999.999-99');
+        $('#whatsapp').inputmask('(99)99999-9999');
+    </script>
 
     <script>
         $("#cep").on("blur", function(e) {
@@ -575,9 +792,28 @@ if ($_REQUEST['action'] == 'insert') {
             }
         })
 
+        //Gravar Assinatura
         $("#btnAssinatura").on("click", function(e) {
 
             var form = $("#frmAssinatura");
+
+            form.submit();
+
+        })
+
+        //Gravar Adição de pontos
+        $("#btnAddPontos").on("click", function(e) {
+
+            var form = $("#frmAddPontos");
+
+            form.submit();
+
+        })
+
+        //Gravar Remoção de pontos
+        $("#btnRemovePontos").on("click", function(e) {
+
+            var form = $("#frmRemovePontos");
 
             form.submit();
 
@@ -604,6 +840,12 @@ if ($_REQUEST['action'] == 'insert') {
         function excluirAssinatura(cliente, id) {
             if (confirm('Tem certeza que deseja excluir essa assinatura?')) {
                 window.location = "dbCadCliente.php?action=excluirassinatura&cliente=" + cliente + "&assinatura=" + id;
+            }
+        }
+
+        function excluirPontos(cliente, id) {
+            if (confirm('Tem certeza que deseja excluir os pontos desse cliente?')) {
+                window.location = "dbCadCliente.php?action=excluirpontos&cliente=" + cliente + "&pontos=" + id;
             }
         }
 

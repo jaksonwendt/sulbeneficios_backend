@@ -11,23 +11,27 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
 //POST
-$id = anti_injection($_POST['cliente']);
-$version = anti_injection($_POST['version']);
+$id = (!empty($_POST['cliente'])) ? anti_injection($_POST['cliente']) : "";
+$version = (!empty($_POST['version'])) ? anti_injection($_POST['version']) : "";
 
 $sql = "select id from clientes where  md5(id) = '$id'";
 $rs = $conn->query($sql);
 
 if ($rs->rowCount() > 0) {
-    $cliente = $rs->fetchColumn();
+	$cliente = $rs->fetchColumn();
 
 	$sql = "select * from pontos where descricao like '%$version%' and cliente = $cliente";
 	$rs = $conn->query($sql);
-	
-	if ($rs->rowCount() == 0){
+
+	if ($rs->rowCount() == 0) {
 		$texto = utf8_decode("Atualização app $version");
 		$sql = "insert into pontos (cliente, descricao, data, pontos, tipo) values ($cliente, '$texto', now(), '1', 'C')";
 		$conn->query($sql);
+
+		echo json_encode('true', JSON_PRETTY_PRINT);
+	} else {
+		echo json_encode('false', JSON_PRETTY_PRINT);
 	}
 } else {
-    echo json_encode('false', JSON_PRETTY_PRINT);
+	echo json_encode('false', JSON_PRETTY_PRINT);
 }

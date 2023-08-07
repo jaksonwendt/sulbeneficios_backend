@@ -110,7 +110,7 @@ require_once "lib/functions.php";
                                                         <li class="breadcrumb-item">
                                                             <a href="dashboard.php"> <i class=" feather icon-home"></i> </a>
                                                         </li>
-                                                        <li class="breadcrumb-item"><a href="#">Assinaturas</a>
+                                                        <li class="breadcrumb-item"><a href="#">Programa de pontos</a>
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -119,123 +119,88 @@ require_once "lib/functions.php";
                                     </div>
                                     <div class="page-body">
                                         <div class="row">
-                                            <div class="col-sm-12">
+                                            <div class="col-sm-6">
                                                 <div class="card">
                                                     <div class="card-block">
-                                                        <form action="#" method="GET" id="frmFiltro">
-                                                            <div class="form-group row">
-                                                                <div class="col-sm-4">
-                                                                    <label for="fcliente">Cliente:</label>
-                                                                    <input type="text" class="form-control" name="fcliente" id="fcliente">
-                                                                </div>
-                                                                <div class="col-sm-2">
-                                                                    <label for="fsituacao">Situacao</label>
-                                                                    <select name="fsituacao" id="fsituacao" class="form-control">
-                                                                        <option value="T">Todas</option>
-                                                                        <option value="Vencidas">Vencidas</option>
-                                                                        <option value="Ativas">Ativas</option>
-                                                                    </select>
-                                                                </div>
-                                                                <div class="col-sm-2">
-                                                                    <label for="fdatainicio">Data Contratação - Início:</label>
-                                                                    <input type="date" class="form-control" name="fdatainicio" id="fdatainicio">
-                                                                </div>
-                                                                <div class="col-sm-2">
-                                                                    <label for="fdatafinal">Data Contratação - Final:</label>
-                                                                    <input type="date" class="form-control" name="fdatafinal" id="fdatafinal">
-                                                                </div>
-                                                            </div>
-                                                            <div class="form-group row">
-                                                                <div class="col-sm-12">
-                                                                    <a class="btn btn-primary btn-sm" href="#" id="btnFiltrar"><i class="fa fa-filter"></i> Filtrar</a>
-                                                                </div>
-                                                            </div>
-                                                        </form>
+                                                        <h5 class="card-header-text">Últimas movimentações</h5>
+                                                        <br>
+                                                        <br>
                                                         <div class="dt-responsive table-responsive">
-                                                            <table id="simpletable" class="table table-striped table-bordered nowrap">
+                                                            <table id="tablepontos" class="table table-striped table-bordered nowrap">
                                                                 <thead>
                                                                     <tr>
+                                                                        <th>Data</th>
                                                                         <th>Cliente</th>
-                                                                        <th>Contratação</th>
-                                                                        <th>Início</th>
-                                                                        <th>Término</th>
-                                                                        <th>Status</th>
-                                                                        <th>Valor</th>
+                                                                        <th>Descrição</th>
+                                                                        <th>Pontos</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
                                                                     <?php
-                                                                    $sql = "select assinatura.id, assinatura.data, assinatura.inicio, assinatura.fim, assinatura.status, assinatura.valor, concat(trim(clientes.nome), ' ', trim(clientes.sobrenome)) as cliente, clientes.id as idcliente from clientes, assinatura where assinatura.cliente = clientes.id and status = 'Pago'";
-
-                                                                    if (!empty($_REQUEST['fcliente'])) {
-                                                                        $sql .= " and concat(trim(clientes.nome), ' ', trim(clientes.sobrenome)) like '%" . $_REQUEST['fcliente'] . "%'";
-                                                                    }
-
-                                                                    if (!empty($_REQUEST['fdatainicio']) && !empty($_REQUEST['fdatafinal'])) {
-                                                                        $sql .= " and data between '" . $_REQUEST['fdatainicio'] . "' and '" . $_REQUEST['fdatafinal'] . "'";
-                                                                    }
-
-                                                                    if (!empty($_REQUEST['fsituacao']) && $_REQUEST['fsituacao'] != 'T') {
-                                                                        if ($_REQUEST['fsituacao'] == 'Vencidas') {
-                                                                            $sql .= " and fim < now()";
-                                                                        } else {
-                                                                            $sql .= " and fim >= now()";
-                                                                        }
-                                                                    }
-
+                                                                    $sql = "select clientes.id as idcliente, concat(trim(clientes.nome), ' ', trim(clientes.sobrenome)) as cliente, pontos.data, pontos.descricao, pontos.pontos, pontos.tipo from pontos, clientes where pontos.cliente = clientes.id order by data desc";
                                                                     $rs = $conn->query($sql);
-
-                                                                    $total = 0;
 
                                                                     if ($rs->rowCount() > 0) {
                                                                         while ($ln = $rs->fetch(PDO::FETCH_ASSOC)) {
 
-                                                                            switch ($ln['status']) {
-                                                                                case 'Pago':
-                                                                                    $status = "<span class='label label-success'>Pago</span>";
-                                                                                    break;
-                                                                                case 'Em Aberto':
-                                                                                    $status = "<span class='label label-danger'>Em Aberto</span>";
-                                                                                    break;
-                                                                            }
-
-                                                                            if (strtotime($ln['fim']) <= strtotime(date("Y-m-d"))) {
-                                                                                $color = "style='color: red'";
+                                                                            if ($ln['tipo'] == 'C') {
+                                                                                $color = "#0ac282";
+                                                                                $pontos = "+" . $ln['pontos'];
                                                                             } else {
-                                                                                $color = "";
+                                                                                $color = "#eb3422";
+                                                                                $pontos = $ln['pontos'];
                                                                             }
-
-                                                                            if (strtotime($ln['fim']) >= strtotime(date("Y-m-d"))) {
-                                                                                $vigencia = "<span class='label label-success'>Vigente</span>";
-                                                                            } else {
-                                                                                $vigencia = "<span class='label label-danger'>Encerrada</span>";
-                                                                            }
-
-                                                                            $total += $ln['valor'];
                                                                     ?>
                                                                             <tr>
+
+                                                                                <td><?= normalizaDataHora2($ln['data']) ?></td>
                                                                                 <td><a href="cadCliente.php?action=edit&id=<?= $ln['idcliente'] ?>"><?= $ln['cliente'] ?></a> </td>
-                                                                                <td><?= normalizaData($ln['data']) ?></td>
-                                                                                <td><?= normalizaData($ln['inicio']) ?></td>
-                                                                                <td <?= $color ?>><?= normalizaData($ln['fim']) ?></td>
-                                                                                <td class="text-center"><?= $status ?></td>
-                                                                                <td class="text-right">R$ <?= moedaUsuario($ln['valor']) ?></td>
+                                                                                <td><?= utf8_encode($ln['descricao']) ?></td>
+                                                                                <td class="text-center" style="font-weight: bold; color: <?= $color ?>"><?= $pontos ?></td>
                                                                             </tr>
                                                                     <?php
                                                                         }
                                                                     }
                                                                     ?>
                                                                 </tbody>
-                                                                <tfoot>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6">
+                                                <div class="card">
+                                                    <div class="card-block">
+                                                        <h5 class="card-header-text">Próximos de resgatar</h5>
+                                                        <br>
+                                                        <br>
+                                                        <div class="dt-responsive table-responsive">
+                                                            <table id="simpletable2" class="table table-striped table-bordered nowrap">
+                                                                <thead>
                                                                     <tr>
-                                                                        <td><strong>Total</strong></td>
-                                                                        <td></td>
-                                                                        <td></td>
-                                                                        <td></td>
-                                                                        <td></td>
-                                                                        <td class='text-right'><strong>R$ <?= moedaUsuario($total) ?></strong></td>
+                                                                        <th>Cliente</th>
+                                                                        <th class="text-center">Pontos</th>
                                                                     </tr>
-                                                                </tfoot>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <?php
+                                                                    $sql = "select clientes.id as idcliente, concat(trim(clientes.nome), ' ', trim(clientes.sobrenome)) as cliente, sum(pontos) as total from pontos, clientes where pontos.cliente = clientes.id group by cliente, idcliente order by total desc";
+
+                                                                    $rs = $conn->query($sql);
+
+
+                                                                    if ($rs->rowCount() > 0) {
+                                                                        while ($ln = $rs->fetch(PDO::FETCH_ASSOC)) {
+                                                                    ?>
+                                                                            <tr>
+                                                                                <td><a href="cadCliente.php?action=edit&id=<?= $ln['idcliente'] ?>"><?= $ln['cliente'] ?></a> </td>
+                                                                                <td class="text-center"><?= $ln['total'] ?></td>
+                                                                            </tr>
+                                                                    <?php
+                                                                        }
+                                                                    }
+                                                                    ?>
+                                                                </tbody>
                                                             </table>
                                                         </div>
                                                     </div>
@@ -281,17 +246,13 @@ require_once "lib/functions.php";
 
 
     <script>
-        function excluir(item) {
-            if (confirm('Tem certeza que deseja excluir?')) {
-                window.location = "dbCadCliente.php?action=delete&id=" + item;
-            }
-        }
-
-        $("#btnFiltrar").on("click", function(e) {
-            e.preventDefault();
-
-            $("#frmFiltro").submit();
-        })
+        $(document).ready(function() {
+            $('#tablepontos').DataTable({
+                "order": [
+                    [0, "desc"]
+                ]
+            });
+        });
     </script>
 </body>
 
